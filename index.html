@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1c1611" />
+  <title>KRD GROUP — QR Code Generator</title>
+  <style>
+    :root{
+      --bg:#1c1611;--panel:#2a2017;--gold:#e0b87d;--bronze:#c09f80;--muted:#b8956a;
+      --text:#fff;--line:rgba(192,159,128,.25)
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:#fff;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;min-height:100vh;overflow-x:hidden}
+    button,input,textarea{font:inherit}
+    button{cursor:pointer}
+    .bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:linear-gradient(135deg,#1c1611 0%,#2a2017 50%,#1c1611 100%)}
+    .bg:before{content:"";position:absolute;left:50%;top:50%;width:140vmax;height:140vmax;transform:translate(-50%,-50%);opacity:.4;background:conic-gradient(from 0deg,transparent 0%,#c09f8055 15%,transparent 30%,#d4b89655 45%,transparent 60%,#b8956a55 75%,transparent 90%);animation:spin 90s linear infinite}
+    .orb{position:absolute;border-radius:50%;filter:blur(70px)}
+    .orb.a{width:600px;height:600px;top:-160px;right:-128px;background:radial-gradient(circle,#c09f80 0%,transparent 70%);opacity:.4;animation:breathe1 24s ease-in-out infinite}
+    .orb.b{width:640px;height:640px;bottom:-190px;left:-128px;background:radial-gradient(circle,#d4b896 0%,transparent 70%);opacity:.35;animation:breathe2 28s ease-in-out infinite}
+    .orb.c{width:420px;height:420px;top:25%;left:33%;background:radial-gradient(circle,#b8956a 0%,transparent 70%);opacity:.3;animation:breathe1 32s ease-in-out infinite reverse}
+    @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+    @keyframes breathe1{50%{transform:translate(-30px,40px) scale(1.08)}}
+    @keyframes breathe2{50%{transform:translate(40px,-30px) scale(1.06)}}
+    @keyframes qrFall{0%{transform:translateY(-15vh) translateX(0) rotate(0deg);opacity:0}10%,90%{opacity:var(--op)}100%{transform:translateY(115vh) translateX(var(--drift)) rotate(var(--rot));opacity:0}}
+    .rain{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+    .drop{position:absolute;top:0;color:var(--gold);opacity:0;animation:qrFall var(--dur) linear var(--delay) infinite}
+    .drop svg{display:block;width:100%;height:100%}
+    .wrap{position:relative;z-index:1;max-width:1050px;margin:0 auto;padding:64px 24px 72px}
+    header{text-align:center;margin:28px 0 64px}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:999px;border:1px solid rgba(192,159,128,.4);margin-bottom:24px}
+    .dot{width:6px;height:6px;border-radius:50%;background:var(--bronze)}
+    .badge span:last-child{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+    h1{font-size:clamp(38px,6vw,64px);line-height:1.05;margin:0;font-weight:800;letter-spacing:-.03em}.accent{color:var(--gold)}
+    .subtitle{max-width:620px;margin:18px auto 0;color:rgba(255,255,255,.6);font-size:clamp(15px,2vw,18px);line-height:1.8;font-weight:300}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}.left{display:flex;flex-direction:column;gap:24px}
+    .panel{background:rgba(42,32,23,.72);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:18px;padding:28px;box-shadow:0 18px 50px rgba(0,0,0,.08)}
+    .panel-title{display:flex;align-items:center;gap:9px;margin-bottom:20px}.bar{width:4px;height:20px;background:var(--gold);border-radius:4px}.panel-title h2{margin:0;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+    .presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}.chip{padding:7px 15px;border-radius:999px;border:1px solid rgba(192,159,128,.3);background:transparent;color:rgba(255,255,255,.62);transition:.2s}.chip:hover{background:var(--bronze);color:#fff}
+    textarea,.text-input{width:100%;border:1px solid rgba(192,159,128,.2);background:rgba(28,22,17,.62);color:#fff;border-radius:12px;padding:13px 14px;outline:none;transition:.2s}.text-input{height:44px}textarea{resize:vertical;min-height:118px;line-height:1.6;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.text-input:focus,textarea:focus{border-color:var(--bronze)}
+    .counter{font-size:12px;color:rgba(255,255,255,.35);margin:8px 0 0;text-align:end}.space{display:flex;flex-direction:column;gap:22px}.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px}
+    .color-row{display:flex;align-items:center;gap:8px}.color-row input[type="color"]{width:42px;height:42px;border:0;padding:0;border-radius:9px;background:transparent}.swatches{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.swatch{width:25px;height:25px;border-radius:6px;border:1px solid rgba(192,159,128,.23);padding:0}.swatch.active{outline:2px solid var(--gold);outline-offset:1px}
+    .range-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:rgba(255,255,255,.5);font-size:13px}input[type="range"]{width:100%;appearance:none;height:4px;border-radius:4px;background:rgba(192,159,128,.2);outline:none}input[type="range"]::-webkit-slider-thumb{appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold)}
+    .seg{display:grid;gap:8px}.seg.four{grid-template-columns:repeat(4,1fr)}.seg.three{grid-template-columns:repeat(3,1fr)}.seg button{padding:10px 8px;border-radius:9px;border:1px solid rgba(192,159,128,.2);background:transparent;color:rgba(255,255,255,.56);transition:.2s}.seg button.active{background:var(--bronze);color:#fff;border-color:var(--bronze)}
+    .mini{padding:14px;border:1px solid rgba(192,159,128,.15);background:rgba(28,22,17,.5);border-radius:12px}
+    .preview{position:sticky;top:32px}.preview-head{display:flex;align-items:center;gap:9px;margin-bottom:18px}.mode{margin-inline-start:auto;display:flex;gap:4px;padding:4px;background:rgba(28,22,17,.6);border:1px solid rgba(192,159,128,.15);border-radius:9px}.mode button{border:0;background:transparent;color:rgba(255,255,255,.5);padding:6px 11px;border-radius:6px;font-size:12px}.mode button.active{background:var(--bronze);color:#fff}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}.primary,.secondary{min-height:48px;border-radius:12px;font-weight:600}.primary{background:var(--bronze);color:#fff;border:1px solid var(--bronze)}.primary:hover{background:var(--gold)}.secondary{background:transparent;color:var(--gold);border:1px solid rgba(192,159,128,.4)}button:disabled{opacity:.4;cursor:not-allowed}
+    .stage{display:flex;align-items:center;justify-content:center;min-height:330px;border-radius:12px;background:rgba(28,22,17,.5);padding:28px;overflow:auto}.empty{text-align:center;color:rgba(255,255,255,.26)}.empty-icon{width:82px;height:82px;border:2px dashed rgba(192,159,128,.3);border-radius:12px;margin:0 auto 14px;display:grid;place-items:center;font-size:35px}
+    .qrbox{padding:16px;border:1px solid rgba(192,159,128,.15);border-radius:10px}.qrbox img{display:block;width:240px;height:240px;max-width:100%;object-fit:contain}
+    .card{border-radius:18px;display:flex;flex-direction:column;align-items:center;gap:16px;padding:32px;transition:.2s}.card-badge{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:700}.card-badge i{display:block;width:4px;height:18px;border-radius:4px}.card-qr{padding:14px;border-radius:12px}.card-qr img{display:block;width:200px;height:200px}.card h3{font-size:18px;margin:0;text-align:center}.card p{font-size:13px;margin:0;text-align:center;max-width:260px;word-break:break-all}
+    footer{text-align:center;margin-top:70px;font-size:13px;color:rgba(255,255,255,.4)}
+    .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);z-index:50;background:#fff;color:#211a14;padding:10px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 10px 35px rgba(0,0,0,.25)}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}.preview{position:static}.wrap{padding-top:82px}.panel{padding:22px}}
+    @media(max-width:540px){.wrap{padding-left:14px;padding-right:14px}.two{grid-template-columns:1fr}.seg.four{grid-template-columns:repeat(2,1fr)}.panel{padding:18px}.stage{padding:16px}.actions{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="bg"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div></div>
+  <div class="rain" id="rain"></div>
+  <main class="wrap">
+    <header>
+    <div class="badge"><span class="dot"></span><span id="badge">KRD GROUP</span></div>
+      <h1><span id="titlePre">QR Code</span> <span class="accent" id="titleHighlight">Generator</span></h1>
+      <p class="subtitle" id="subtitle"></p>
+    </header>
+
+    <section class="grid">
+      <div class="left">
+        <div class="panel">
+          <div class="panel-title"><span class="bar"></span><h2 id="inputTitle"></h2></div>
+          <div class="presets">
+            <button class="chip" data-preset="https://" id="presetLink"></button>
+            <button class="chip" data-preset="mailto:" id="presetEmail"></button>
+            <button class="chip" data-preset="tel:" id="presetPhone"></button>
+            <button class="chip" data-preset="" id="presetText"></button>
+          </div>
+          <textarea id="dataInput" rows="4"></textarea>
+          <p class="counter"><span id="charCountNum">0</span> <span id="charCount"></span></p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><span class="bar"></span><h2 id="customTitle"></h2></div>
+          <div class="space">
+            <div class="two">
+              <div>
+                <label class="label" id="fgLabel"></label>
+                <div class="color-row"><input type="color" id="fgPicker" value="#1a1a2e"><input class="text-input" id="fgText" value="#1a1a2e"></div>
+                <div class="swatches" data-target="fg"></div>
+              </div>
+              <div>
+                <label class="label" id="bgLabel"></label>
+                <div class="color-row"><input type="color" id="bgPicker" value="#ffffff"><input class="text-input" id="bgText" value="#ffffff"></div>
+                <div class="swatches" data-target="bg"></div>
+              </div>
+            </div>
+            <div>
+              <div class="range-head"><label class="label" id="sizeLabel" style="margin:0"></label><span class="mono"><span id="sizeVal">320</span>px</span></div>
+              <input type="range" id="sizeRange" min="160" max="600" step="20" value="320">
+            </div>
+            <div>
+              <div class="range-head"><label class="label" id="marginLabel" style="margin:0"></label><span class="mono" id="marginVal">2</span></div>
+              <input type="range" id="marginRange" min="0" max="10" step="1" value="2">
+            </div>
+            <div>
+              <label class="label" id="eccLabel"></label>
+              <div class="seg four" id="eccSeg">
+                <button data-ecc="L"></button><button class="active" data-ecc="M"></button><button data-ecc="Q"></button><button data-ecc="H"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><span class="bar"></span><h2 id="cardTitleLabel"></h2></div>
+          <div class="space">
+            <div><label class="label" id="titleLabel"></label><input class="text-input" id="cardTitle"></div>
+            <div><label class="label" id="subtitleLabel"></label><input class="text-input" id="cardSubtitle"></div>
+            <div>
+              <label class="label" id="accentLabel"></label>
+              <div class="color-row"><input type="color" id="accentPicker" value="#e0b87d"><input class="text-input" id="accentText" value="#e0b87d"></div>
+              <div class="swatches" data-target="accent"></div>
+            </div>
+            <div class="two">
+              <div class="mini"><div class="range-head"><span class="label" id="widthLabel" style="margin:0"></span><span class="mono"><span id="widthVal">320</span>px</span></div><input type="range" id="widthRange" min="240" max="700" step="10" value="320"></div>
+              <div class="mini"><div class="range-head"><span class="label" id="heightLabel" style="margin:0"></span><span class="mono"><span id="heightVal">360</span>px</span></div><input type="range" id="heightRange" min="240" max="900" step="10" value="360"></div>
+            </div>
+            <div><label class="label" id="styleLabel"></label><div class="seg three" id="styleSeg"><button class="active" data-style="espresso"></button><button data-style="bronze"></button><button data-style="light"></button></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview">
+        <div class="panel">
+          <div class="preview-head"><span class="bar"></span><h2 id="previewTitle" style="margin:0;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7)"></h2><div class="mode"><button class="active" data-mode="qr" id="modeQr"></button><button data-mode="card" id="modeCard"></button></div></div>
+          <div class="actions"><button class="primary" id="downloadBtn" disabled>⬇ <span id="downloadText"></span></button><button class="secondary" id="copyBtn" disabled><span id="copyText"></span></button></div>
+          <div class="stage" id="stage"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer id="footer"></footer>
+  </main>
+  <div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const T = {
+    en:{dir:'ltr',badge:'KRD GROUP',titlePre:'QR Code',titleHighlight:'Generator',subtitle:'Enter text, a link, or any data and create a beautiful QR code in a few clicks',footer:'© 2026 KRD Group. All rights reserved.',inputTitle:'QR Content',presetLink:'Link',presetEmail:'Email',presetPhone:'Phone',presetText:'Text',inputPlaceholder:'Enter a link, text, or any data here...',charCount:'characters',customTitle:'Customize',fgColor:'Code color',bgColor:'Background',size:'Size',margin:'Margin',ecc:'Error correction (ECC)',eccL:'Low',eccM:'Medium',eccQ:'High',eccH:'Highest',cardTitleLabel:'Card design',titleLabel:'Title',subtitleLabel:'Subtitle / text',accentLabel:'Border color',styleLabel:'Background style',styleEspresso:'Espresso',styleBronze:'Bronze',styleLight:'Light',width:'Width',height:'Height',previewTitle:'Preview',modeQr:'Code',modeCard:'Card',download:'Download',copyLink:'Copy link',copied:'Copied!',emptyHint:'Waiting for you to type something...',cardBadge:'KRD GROUP',defaultCardTitle:'QR Code Generator'}
+  };
+  const $ = id => document.getElementById(id);
+  const state={lang:'en',data:'',fg:'#1a1a2e',bg:'#ffffff',size:320,margin:2,ecc:'M',cardTitle:'',cardSubtitle:'',accent:'#e0b87d',style:'espresso',width:320,height:360,mode:'qr'};
+  const swatches=['#ffffff','#e0b87d','#c09f80','#a67c4e','#1a1a2e','#0f766e','#1e40af','#be185d'];
+  const accentSwatches=['#e0b87d','#c09f80','#a67c4e','#f5ece0','#be185d','#1e40af','#0f766e'];
+  const styles={espresso:{bg:'linear-gradient(135deg,#1c1611 0%,#2a2017 100%)',title:'#fff',sub:'#ffffff99'},bronze:{bg:'linear-gradient(135deg,#3a2a1c 0%,#5a3e26 100%)',title:'#fff',sub:'#ffffffcc'},light:{bg:'linear-gradient(135deg,#faf6f0 0%,#f0e6d6 100%)',title:'#1a1a2e',sub:'#1a1a2e99'}};
+
+  function qrUrl(){
+    const d=state.data.trim(); if(!d) return '';
+    const p=new URLSearchParams({size:state.size+'x'+state.size,data:d,color:state.fg.replace('#',''),bgcolor:state.bg.replace('#',''),ecc:state.ecc,margin:String(state.margin)});
+    return 'https://api.qrserver.com/v1/create-qr-code/?'+p.toString();
+  }
+  function validHex(v){return /^#[0-9a-fA-F]{6}$/.test(v)}
+  function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),1800)}
+
+  function renderLang(){
+    const t=T[state.lang]; document.documentElement.lang=state.lang;document.documentElement.dir=t.dir;
+    const ids={badge:'badge',titlePre:'titlePre',titleHighlight:'titleHighlight',subtitle:'subtitle',footer:'footer',inputTitle:'inputTitle',presetLink:'presetLink',presetEmail:'presetEmail',presetPhone:'presetPhone',presetText:'presetText',charCount:'charCount',customTitle:'customTitle',fgColor:'fgLabel',bgColor:'bgLabel',size:'sizeLabel',margin:'marginLabel',ecc:'eccLabel',cardTitleLabel:'cardTitleLabel',titleLabel:'titleLabel',subtitleLabel:'subtitleLabel',accentLabel:'accentLabel',width:'widthLabel',height:'heightLabel',styleLabel:'styleLabel',previewTitle:'previewTitle',modeQr:'modeQr',modeCard:'modeCard',download:'downloadText',copyLink:'copyText'};
+    Object.entries(ids).forEach(([k,id])=>$(id).textContent=t[k]);
+    $('dataInput').placeholder=t.inputPlaceholder;$('cardTitle').placeholder=t.defaultCardTitle;$('cardSubtitle').placeholder=t.subtitleLabel;
+    const eccTexts=[t.eccL,t.eccM,t.eccQ,t.eccH];[...$('eccSeg').children].forEach((b,i)=>b.textContent=eccTexts[i]);
+    const styleTexts=[t.styleEspresso,t.styleBronze,t.styleLight];[...$('styleSeg').children].forEach((b,i)=>b.textContent=styleTexts[i]);
+    renderPreview();
+  }
+  function renderSwatches(){
+    document.querySelectorAll('.swatches').forEach(box=>{const target=box.dataset.target;const list=target==='accent'?accentSwatches:swatches;box.innerHTML='';list.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='swatch';b.style.background=c;b.title=c;b.addEventListener('click',()=>setColor(target,c));box.appendChild(b)});});updateSwatchActive();
+  }
+  function updateSwatchActive(){document.querySelectorAll('.swatches').forEach(box=>{const val=state[box.dataset.target];[...box.children].forEach(b=>b.classList.toggle('active',rgbToHex(b.style.backgroundColor).toLowerCase()===val.toLowerCase()))})}
+  function rgbToHex(c){if(c.startsWith('#'))return c;const m=c.match(/\d+/g);return m?'#'+m.slice(0,3).map(x=>(+x).toString(16).padStart(2,'0')).join(''):c}
+  function setColor(target,val){if(!validHex(val))return;state[target]=val;const map={fg:['fgPicker','fgText'],bg:['bgPicker','bgText'],accent:['accentPicker','accentText']};$(map[target][0]).value=val;$(map[target][1]).value=val;updateSwatchActive();renderPreview()}
+
+  function renderPreview(){
+    const t=T[state.lang], has=!!state.data.trim(), url=qrUrl();$('downloadBtn').disabled=!has;$('copyBtn').disabled=!has;$('charCountNum').textContent=state.data.length;
+    [...document.querySelectorAll('.mode button')].forEach(b=>b.classList.toggle('active',b.dataset.mode===state.mode));
+    const st=$('stage'); st.innerHTML='';
+    if(!has){st.innerHTML='<div class="empty"><div class="empty-icon">▦</div><p>'+escapeHtml(t.emptyHint)+'</p></div>';return}
+    if(state.mode==='qr'){
+      const box=document.createElement('div');box.className='qrbox';box.style.backgroundColor=state.bg;const img=document.createElement('img');img.src=url;img.alt='QR Code';box.appendChild(img);st.appendChild(box);return;
+    }
+    const s=styles[state.style];const card=document.createElement('div');card.className='card';card.style.background=s.bg;card.style.border='2px solid '+state.accent;card.style.width=state.width+'px';card.style.minHeight=state.height+'px';card.dir=T[state.lang].dir;
+    const title=(state.cardTitle||t.defaultCardTitle).trim();const sub=state.cardSubtitle.trim();
+    card.innerHTML='<div class="card-badge" style="color:'+state.accent+'"><i style="background:'+state.accent+'"></i>'+escapeHtml(t.cardBadge)+'</div><div class="card-qr" style="background:'+state.bg+';border:1px solid '+state.accent+'"><img alt="QR"></div>'+(title?'<h3 style="color:'+s.title+'">'+escapeHtml(title)+'</h3>':'')+(sub?'<p style="color:'+s.sub+'">'+escapeHtml(sub)+'</p>':'');
+    card.querySelector('img').src=url;st.appendChild(card);
+  }
+  function escapeHtml(v){return String(v).replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[m]))}
+
+  async function blobFromUrl(url){const r=await fetch(url,{mode:'cors'});if(!r.ok)throw new Error('Download failed');return await r.blob()}
+  async function downloadQR(){const url=qrUrl();if(!url)return;try{const blob=await blobFromUrl(url);downloadBlob(blob,'qr-code-'+Date.now()+'.png')}catch(e){window.open(url,'_blank')}}
+  function downloadBlob(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+  async function downloadCard(){
+    const url=qrUrl();if(!url)return;const t=T[state.lang], s=styles[state.style];
+    try{
+      const qrBlob=await blobFromUrl(url), img=await createImageBitmap(qrBlob);const scale=3,w=state.width,h=Math.max(state.height,360);const c=document.createElement('canvas');c.width=w*scale;c.height=h*scale;const ctx=c.getContext('2d');ctx.scale(scale,scale);
+      const grd=ctx.createLinearGradient(0,0,w,h);if(state.style==='espresso'){grd.addColorStop(0,'#1c1611');grd.addColorStop(1,'#2a2017')}else if(state.style==='bronze'){grd.addColorStop(0,'#3a2a1c');grd.addColorStop(1,'#5a3e26')}else{grd.addColorStop(0,'#faf6f0');grd.addColorStop(1,'#f0e6d6')}ctx.fillStyle=grd;roundRect(ctx,0,0,w,h,18);ctx.fill();ctx.strokeStyle=state.accent;ctx.lineWidth=2;roundRect(ctx,1,1,w-2,h-2,18);ctx.stroke();
+      ctx.textAlign='center';ctx.font='700 11px system-ui';ctx.fillStyle=state.accent;ctx.fillText(t.cardBadge.toUpperCase(),w/2,48);
+      const q=200,qx=(w-q)/2,qy=72;ctx.fillStyle=state.bg;roundRect(ctx,qx-14,qy-14,q+28,q+28,12);ctx.fill();ctx.strokeStyle=state.accent;ctx.lineWidth=1;ctx.stroke();ctx.drawImage(img,qx,qy,q,q);
+      const title=(state.cardTitle||t.defaultCardTitle).trim();let y=qy+q+48;ctx.fillStyle=s.title;ctx.font='700 18px system-ui';wrapText(ctx,title,w/2,y,w-44,24);y+=36;if(state.cardSubtitle.trim()){ctx.fillStyle=s.sub;ctx.font='13px system-ui';wrapText(ctx,state.cardSubtitle.trim(),w/2,y,w-44,19)}
+      c.toBlob(b=>downloadBlob(b,'qr-card-'+Date.now()+'.png'),'image/png',1);
+    }catch(e){console.error(e);toast('Card download failed')}
+  }
+  function roundRect(ctx,x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+  function wrapText(ctx,text,x,y,maxWidth,lineHeight){const words=String(text).split(/\s+/);let line='';for(let i=0;i<words.length;i++){const test=line+words[i]+' ';if(ctx.measureText(test).width>maxWidth&&i>0){ctx.fillText(line.trim(),x,y);line=words[i]+' ';y+=lineHeight}else line=test}ctx.fillText(line.trim(),x,y)}
+
+  function bind(){
+    document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{$('dataInput').value=b.dataset.preset;state.data=b.dataset.preset;renderPreview();$('dataInput').focus()});
+    $('dataInput').oninput=e=>{state.data=e.target.value;renderPreview()};
+    [['fgPicker','fg'],['bgPicker','bg'],['accentPicker','accent']].forEach(([id,k])=>$(id).oninput=e=>setColor(k,e.target.value));
+    [['fgText','fg'],['bgText','bg'],['accentText','accent']].forEach(([id,k])=>$(id).onchange=e=>{if(validHex(e.target.value))setColor(k,e.target.value);else e.target.value=state[k]});
+    $('sizeRange').oninput=e=>{state.size=+e.target.value;$('sizeVal').textContent=state.size;renderPreview()};
+    $('marginRange').oninput=e=>{state.margin=+e.target.value;$('marginVal').textContent=state.margin;renderPreview()};
+    $('widthRange').oninput=e=>{state.width=+e.target.value;$('widthVal').textContent=state.width;renderPreview()};
+    $('heightRange').oninput=e=>{state.height=+e.target.value;$('heightVal').textContent=state.height;renderPreview()};
+    $('cardTitle').oninput=e=>{state.cardTitle=e.target.value;renderPreview()};$('cardSubtitle').oninput=e=>{state.cardSubtitle=e.target.value;renderPreview()};
+    $('eccSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;state.ecc=b.dataset.ecc;[...$('eccSeg').children].forEach(x=>x.classList.toggle('active',x===b));renderPreview()};
+    $('styleSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;state.style=b.dataset.style;[...$('styleSeg').children].forEach(x=>x.classList.toggle('active',x===b));renderPreview()};
+    document.querySelector('.mode').onclick=e=>{const b=e.target.closest('button');if(!b)return;state.mode=b.dataset.mode;renderPreview()};
+    $('downloadBtn').onclick=()=>state.mode==='card'?downloadCard():downloadQR();
+    $('copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(qrUrl());toast(T[state.lang].copied)}catch(e){const ta=document.createElement('textarea');ta.value=qrUrl();document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast(T[state.lang].copied)}};
+  }
+  function rain(){const root=$('rain');for(let i=0;i<14;i++){const d=document.createElement('div'),size=18+Math.random()*30;d.className='drop';d.style.left=Math.random()*100+'%';d.style.width=size+'px';d.style.height=size+'px';d.style.setProperty('--op',.22+Math.random()*.18);d.style.setProperty('--drift',(Math.random()-.5)*80+'px');d.style.setProperty('--rot',(Math.random()-.5)*60+'deg');d.style.setProperty('--dur',14+Math.random()*16+'s');d.style.setProperty('--delay',-Math.random()*30+'s');d.innerHTML='<svg viewBox="0 0 29 29" fill="currentColor"><path d="M0 0h7v7H0zm1 1v5h5V1zM22 0h7v7h-7zm1 1v5h5V1zM0 22h7v7H0zm1 1v5h5v-5z"/><path d="M2 2h3v3H2zM24 2h3v3h-3zM2 24h3v3H2zM9 1h1v1H9zM11 2h1v1h-1zM13 1h2v1h-2zM16 3h1v1h-1zM18 1h1v2h-1zM9 4h2v1H9zM12 5h1v1h-1zM14 4h1v2h-1zM17 5h2v1h-2zM1 9h1v2H1zM3 9h2v1H3zM6 10h1v2H6zM8 9h2v2H8zM11 10h1v2h-1zM13 9h1v1h-1zM15 11h2v1h-2zM18 9h1v2h-1zM20 10h2v1h-2zM23 9h1v2h-1zM25 11h2v1h-2zM2 13h1v2H2zM4 14h2v1H4zM7 13h1v1H7zM9 14h1v2H9zM11 13h2v1h-2zM14 15h1v1h-1zM16 13h1v2h-1zM18 15h2v1h-2zM21 13h1v2h-1zM23 14h2v1h-2zM26 13h1v2h-1zM1 17h2v1H1zM4 18h1v2H4zM6 17h1v1H6zM8 18h2v1H8zM11 17h1v2h-1zM13 18h2v1h-2zM16 17h1v2h-1zM18 18h1v1h-1zM20 17h2v2h-2zM23 18h1v1h-1zM25 17h2v1h-2zM9 21h1v2H9zM11 22h2v1h-2zM14 21h1v2h-1zM16 23h2v1h-2zM19 21h1v1h-1zM21 22h2v1h-2zM24 21h1v2h-1zM26 23h2v1h-2zM9 25h2v1H9zM12 26h1v2h-1zM14 25h2v1h-2zM17 26h1v2h-1zM19 25h2v2h-2zM22 26h1v1h-1zM24 25h2v1h-2zM27 27h1v1h-1z"/></svg>';root.appendChild(d)}}
+  renderSwatches();bind();renderLang();rain();renderPreview();
+})();
+</script>
+</body>
+</html>
